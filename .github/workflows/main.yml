@@ -29,6 +29,10 @@ jobs:
         run: npm run build
         working-directory: ./frontend
 
+      - name: List build directory contents # Debugging step to list contents of the build directory
+        run: ls -l
+        working-directory: ./frontend/build
+
       - name: Deploy to Production
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -39,8 +43,8 @@ jobs:
           git checkout production || git checkout --orphan production
           git reset --hard origin/production
           git rm -rf *
-          cp -r build/* .
+          cp -r * . # Copy everything from the current directory, assuming it is ./frontend/build
           git add .
           git commit -m "Production Build" || echo "No changes to commit"
           git push origin production --force
-        working-directory: ./frontend
+        working-directory: ./frontend/build
