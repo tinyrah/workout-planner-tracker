@@ -33,6 +33,8 @@ jobs:
         run: ls -l
         working-directory: ./frontend/build
 
+
+
       - name: Deploy to Production
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -42,11 +44,12 @@ jobs:
           git fetch --all
           git checkout production || git checkout --orphan production
           git reset --hard origin/production
-          git rm -rf *
+          git rm -rf * # Clear out the current contents
           cp -a ../build/. . # Copy everything from the build directory
           git add .
           git commit -m "Production Build" || echo "No changes to commit"
           git push origin production --force
-        working-directory: ./frontend
+        working-directory: ./frontend/build
+      
 
         
