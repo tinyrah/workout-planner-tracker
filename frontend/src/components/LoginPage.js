@@ -4,7 +4,7 @@ import '../styles/LoginPage.css';
 function LoginPage() {
   return (
     <div className="login-container">
-      <h1>Workout Planner test </h1>
+      <h1>Workout Planner test123 </h1>
       <form>
         <input type="email" placeholder="Email" required />
         <input type="password" placeholder="Password" required />
