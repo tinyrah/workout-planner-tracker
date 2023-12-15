@@ -13,6 +13,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
       
+      - name: Set up Git Configuration
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
@@ -39,19 +44,15 @@ jobs:
             git reset --hard origin/production
           else
             git checkout --orphan production
-            git rm -rf .
           fi
+          # Remove all files except for the .git directory
+          git rm -rf . --ignore-unmatch
+          git clean -fdx
           # Copy the build files from the build directory
           cp -a ${GITHUB_WORKSPACE}/frontend/build/* .
-          # If there were changes (new files), then commit them
-          if [ -n "$(git status --porcelain)" ]; then
-            git add .
-            git commit -m "Deploy production build"
-            git push origin production --force
-          else
-            echo "No changes to commit"
-          fi
+          # Add and commit the changes
+          git add .
+          git commit -m "Deploy production build" || echo "No changes to commit"
+          git push origin production --force
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-
-
