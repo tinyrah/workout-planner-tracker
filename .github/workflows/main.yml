@@ -30,6 +30,15 @@ jobs:
         run: ls -l build
         working-directory: ./frontend
 
+      - name: Debugging current directory and contents
+        run: |
+          echo "Current Working Directory:"
+          pwd
+          echo "Listing contents of ${GITHUB_WORKSPACE}:"
+          ls -la ${GITHUB_WORKSPACE}
+          echo "Listing contents of frontend/build:"
+          ls -la ${GITHUB_WORKSPACE}/frontend/build
+
       - name: Deploy to Production
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -46,4 +55,3 @@ jobs:
           git add .
           git commit -m "Production Build" || echo "No changes to commit"
           git push origin production --force
-
