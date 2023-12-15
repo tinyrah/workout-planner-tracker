@@ -32,19 +32,26 @@ jobs:
 
       - name: Copy build artifacts to production branch
         run: |
-          # Switch to the production branch, creating it if it doesn't exist
-          git checkout production || git checkout --orphan production
-          # Reset the production branch to the latest commit
-          git reset --hard origin/production
-          # Remove all current files except for the .git directory
-          find . -maxdepth 1 ! -name '.git' ! -name '.' ! -name '..' -exec rm -rf {} +
+          git fetch --all
+          # Check if the production branch exists on the remote
+          if git rev-parse --verify origin/production; then
+            git checkout production
+            git reset --hard origin/production
+          else
+            git checkout --orphan production
+            git rm -rf .
+          fi
           # Copy the build files from the build directory
           cp -a ${GITHUB_WORKSPACE}/frontend/build/* .
-          # Add and commit the changes
-          git add .
-          git commit -m "Deploy production build"
-          # Push the changes to the production branch
-          git push origin production --force
+          # If there were changes (new files), then commit them
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "Deploy production build"
+            git push origin production --force
+          else
+            echo "No changes to commit"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
 
