@@ -50,8 +50,12 @@ jobs:
           git reset --hard origin/production
           # Remove all current files except for the .git directory
           find . -maxdepth 1 ! -name '.git' ! -name '.' ! -name '..' -exec rm -rf {} +
-          # Copy the build files from the main branch
-          cp -a ${GITHUB_WORKSPACE}/frontend/build/* .
+          # Change directory to frontend/build
+          cd ${GITHUB_WORKSPACE}/frontend/build
+          # Copy the build files to the root of the production branch
+          cp -a . ${GITHUB_WORKSPACE}
+          # Change directory back to the root
+          cd ${GITHUB_WORKSPACE}
           git add .
           git commit -m "Production Build" || echo "No changes to commit"
           git push origin production --force
