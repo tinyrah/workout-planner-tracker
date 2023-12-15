@@ -30,29 +30,30 @@ jobs:
         run: ls -l build
         working-directory: ./frontend
 
-      - name: Debugging current directory and contents
+      - name: Copy build artifacts to production branch
         run: |
-          echo "Current Working Directory:"
-          pwd
-          echo "Listing contents of ${GITHUB_WORKSPACE}:"
-          ls -la ${GITHUB_WORKSPACE}
-          echo "Listing contents of frontend/build:"
-          ls -la ${GITHUB_WORKSPACE}/frontend/build
-
-      - name: Clear Old Files in Production Branch
-        run: |
-            git checkout production || git checkout --orphan production
-            git reset --hard origin/production
-            find . -maxdepth 1 ! -name '.git' ! -name '.' ! -name '..' -exec rm -rf {} +
-  
-      - name: Copy Build Artifacts
-        run: |
-            cp -a ${GITHUB_WORKSPACE}/frontend/build/* .
-  
-      - name: Commit and Push to Production
+          # Get the file list from the build directory
+          files=$(find frontend/build -type f)
+          # Set up Git config
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          # Fetch all branches
+          git fetch
+          # Switch to the production branch
+          git checkout production || git checkout --orphan production
+          # Reset to ensure it's clean
+          git reset --hard origin/production
+          # Remove all current files except for the .git directory
+          find . -maxdepth 1 ! -name '.git' ! -name '.' ! -name '..' -exec rm -rf {} +
+          # Checkout the files from the main branch
+          git checkout HEAD -- $files
+          # Move the build artifacts to root
+          mv frontend/build/* .
+          # Clean up the frontend/build folder
+          rm -rf frontend/build
+          # Commit and push changes to production
+          git add .
+          git commit -m "Deploy production build"
+          git push origin production --force
         env:
-            GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-            git add .
-            git commit -m "Production Build" || echo "No changes to commit"
-            git push origin production --force
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
